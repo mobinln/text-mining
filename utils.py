@@ -1,3 +1,4 @@
+import pandas as pd
 from datasets import load_dataset
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
@@ -5,19 +6,23 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 
 
 def get_data():
-    ds = load_dataset("dair-ai/emotion", "split")
+    # ds = load_dataset("dair-ai/emotion", "split")
+    df = pd.read_csv("./data/snappfood-comments.csv")
 
     # Preprocessing
     vectorizer = TfidfVectorizer(stop_words="english")
-    X = vectorizer.fit_transform(ds["train"]["text"])
+    X = vectorizer.fit_transform(df["comment"])
     feature_names = vectorizer.get_feature_names_out()
 
     # Split data
     X_train, X_test, y_train, y_test = train_test_split(
-        X, ds["train"]["label"], test_size=0.2, random_state=42
+        X, df["label_id"], test_size=0.2, random_state=42
     )
 
-    return X_train, X_test, y_train, y_test, feature_names
+    def preprocess_data(text):
+        return vectorizer.transform([text])
+
+    return X_train, X_test, y_train, y_test, feature_names, preprocess_data
 
 
 def get_classification_metrics(y_test, pred):
